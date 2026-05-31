@@ -59,10 +59,19 @@ fn main() {
         if command == "cd" {
             let arg = &args.join(" ");
             let new_path = Path::new(arg);
+            
+            if arg.trim() == "~" {
+                
+                let new_path = &std::env::var("HOME").unwrap_or_default();
+                std::env::set_current_dir(new_path).unwrap();
+                continue;
+            }
+
             if new_path.is_dir() {
                 std::env::set_current_dir(new_path).unwrap();
                 continue;
             }
+
             println!("{}: {}: No such file or directory", command, arg);
             continue;
         }
