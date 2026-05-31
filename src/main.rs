@@ -56,6 +56,17 @@ fn main() {
             continue;
         }
 
+        if command == "cd" {
+            let arg = &args.join(" ");
+            let new_path = Path::new(arg);
+            if new_path.is_dir() {
+                std::env::set_current_dir(new_path).unwrap();
+                continue;
+            }
+            println!("{}: {}: No such file or directory", command, arg);
+            continue;
+        }
+
         let executable_cmd = find_executable(command);
         match executable_cmd {
             Some(value) => {
