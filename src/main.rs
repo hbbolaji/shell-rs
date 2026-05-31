@@ -1,5 +1,5 @@
 use std::{
-    env,
+    env::{self, current_dir},
     io::{Write, stdin, stdout},
     path::Path,
 };
@@ -12,7 +12,8 @@ struct Executable {
 }
 
 fn main() {
-    let shell_builtin = ["echo", "type", "exit"];
+    let shell_builtin = ["echo", "type", "exit", "pwd"];
+    
 
     loop {
         print!("$ ");
@@ -49,15 +50,20 @@ fn main() {
             break;
         }
 
+        if command == "pwd" {
+            let pwd = current_dir().unwrap();
+            println!("{:?}", pwd.display());
+            continue;
+        }
+
         let executable_cmd = find_executable(command);
         match executable_cmd {
             Some(value) => {
-                let output = std::process::Command::new(value.cmd)
+                std::process::Command::new(value.cmd)
                     .args(args)
                     .status()
                     .unwrap();
 
-                println!("{:?}", output.to_string());
             }
             None => println!("{}: command not found", command),
         }
