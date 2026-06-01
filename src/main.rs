@@ -24,7 +24,7 @@ fn main() {
         user_input = user_input.trim().to_string();
         let user_input_list = user_input.splitn(2, " ").collect::<Vec<&str>>();
         let command = user_input_list[0];
-        let args = user_input_list[1];
+        let args = if user_input_list.len() != 1 {user_input_list[1]} else {""};
         let args_list = format_args(args);
 
         if command == "echo" {
@@ -32,19 +32,19 @@ fn main() {
             continue;
         }
 
-        // if command == "type" {
-        //     for arg in &args_list {
-        //         if shell_builtin.contains(&arg) {
-        //             println!("{} is a shell builtin", arg);
-        //         } else {
-        //             match find_executable(arg) {
-        //                 Some(value) => println!("{}", value.path),
-        //                 _ => println!("{} not found", arg),
-        //             };
-        //         }
-        //     }
-        //     continue;
-        // }
+        if command == "type" {
+            for arg in &args_list {
+                if shell_builtin.contains(&arg.as_str()) {
+                    println!("{} is a shell builtin", arg);
+                } else {
+                    match find_executable(arg) {
+                        Some(value) => println!("{}", value.path),
+                        _ => println!("{} not found", arg),
+                    };
+                }
+            }
+            continue;
+        }
 
         if command == "exit" {
             break;
@@ -52,7 +52,7 @@ fn main() {
 
         if command == "pwd" {
             let pwd = current_dir().unwrap();
-            println!("{:?}", pwd.display());
+            println!("{}", pwd.display());
             continue;
         }
 
