@@ -13,7 +13,6 @@ struct Executable {
 
 fn main() {
     let shell_builtin = ["echo", "type", "exit", "pwd"];
-    
 
     loop {
         print!("$ ");
@@ -23,28 +22,29 @@ fn main() {
         stdin().read_line(&mut user_input).unwrap();
 
         user_input = user_input.trim().to_string();
-        let user_input_list = user_input.split(" ").collect::<Vec<&str>>();
+        let user_input_list = user_input.splitn(2, " ").collect::<Vec<&str>>();
         let command = user_input_list[0];
-        let args = &user_input_list[1..];
+        let args = user_input_list[1];
+        let args_list = format_args(args);
 
         if command == "echo" {
-            println!("{}", &user_input[5..].trim());
+            println!("{}", &args_list.join(" "));
             continue;
         }
 
-        if command == "type" {
-            for arg in args {
-                if shell_builtin.contains(arg) {
-                    println!("{} is a shell builtin", arg);
-                } else {
-                    match find_executable(arg) {
-                        Some(value) => println!("{}", value.path),
-                        _ => println!("{} not found", arg),
-                    };
-                }
-            }
-            continue;
-        }
+        // if command == "type" {
+        //     for arg in &args_list {
+        //         if shell_builtin.contains(&arg) {
+        //             println!("{} is a shell builtin", arg);
+        //         } else {
+        //             match find_executable(arg) {
+        //                 Some(value) => println!("{}", value.path),
+        //                 _ => println!("{} not found", arg),
+        //             };
+        //         }
+        //     }
+        //     continue;
+        // }
 
         if command == "exit" {
             break;
@@ -57,11 +57,10 @@ fn main() {
         }
 
         if command == "cd" {
-            let arg = &args.join(" ");
+            let arg = &args_list.join(" ");
             let new_path = Path::new(arg);
-            
+
             if arg.trim() == "~" {
-                
                 let new_path = &std::env::var("HOME").unwrap_or_default();
                 std::env::set_current_dir(new_path).unwrap();
                 continue;
@@ -80,10 +79,9 @@ fn main() {
         match executable_cmd {
             Some(value) => {
                 std::process::Command::new(value.cmd)
-                    .args(args)
+                    .args(args_list)
                     .status()
                     .unwrap();
-
             }
             None => println!("{}: command not found", command),
         }
@@ -107,4 +105,19 @@ fn find_executable(executable: &str) -> Option<Executable> {
         cmd: executable.into(),
         path: path_dir[0].to_string(),
     })
+}
+
+fn format_args(arg: &str) -> Vec<String> {
+    // if arg.contains("'") {
+    //     return arg
+    //         .split("'")
+    //         // .map(|t| t.trim())
+    //         .filter(|s| !s.is_empty())
+    //         .collect::<Vec<&str>>();
+    // }
+
+    // arg.split(" ")
+    //     .filter(|e| !e.is_empty())
+    //     .collect::<Vec<&str>>()
+    shell_words::split(arg).unwrap()
 }
